@@ -1,0 +1,48 @@
+# Secrets et configuration locale
+.env
+.env.*
+*.env
+!.env.example
+
+# Environnements et dependances locales
+.venv/
+venv/
+env/
+.uv-cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Donnees generees par la pipeline
+data/donnees_collectees/*.json
+!data/donnees_collectees/manual_seed.json
+data/rapports_generes/*.md
+data/rapports_generes/*.pdf
+data/exports/*.csv
+data/validation/*.json
+
+# Bases locales et index vectoriels
+data/vector_db/
+*.sqlite
+*.sqlite3
+*.db
+
+# Caches et logs systeme
+*.log
+!logs/*.log
+Thumbs.db
+.DS_Store
+

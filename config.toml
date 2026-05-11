@@ -1,0 +1,103 @@
+[project]
+name = "Assistant Autonome de Veille sur les Frameworks IA"
+authors = ["Omar BOUREZGUI", "Wassim RHAZZAL"]
+language = "fr"
+mode = "simple-intermediaire"
+
+[surveillance]
+frameworks = [
+  "LangChain",
+  "LlamaIndex",
+  "LangGraph",
+  "CrewAI",
+  "AutoGen",
+  "Haystack",
+  "DSPy",
+  "Smolagents"
+]
+keywords = [
+  "release",
+  "agent",
+  "rag",
+  "orchestration",
+  "benchmark",
+  "licence",
+  "security",
+  "breaking change",
+  "evaluation"
+]
+
+[sources]
+github_enabled = true
+arxiv_enabled = true
+manual_fallback_enabled = true
+max_items_per_source = 20
+
+[rag]
+chunk_size_words = 120
+chunk_overlap_words = 25
+top_k = 4
+retrieval_strategy = "chromadb_vector_search_with_lexical_fallback"
+embedding_strategy = "embeddings locaux deterministes, remplacables par OpenAI/HuggingFace"
+vector_db_path = "data/vector_db"
+
+[agents.collecteur]
+role = "Collecter les signaux faibles et changements importants autour des frameworks IA."
+output = "data/donnees_collectees/items_collectes.json"
+
+[agents.filtreur]
+role = "Nettoyer, dedupliquer et classer les informations collectees."
+output = "data/donnees_collectees/items_filtres.json"
+
+[agents.rag]
+role = "Retrouver les informations internes pertinentes pour contextualiser chaque tendance."
+output = "logs/agent_rag.log"
+
+[agents.analyste]
+role = "Croiser marche externe et contexte interne pour produire un score et une recommandation."
+output = "logs/agent_analyste.log"
+
+[agents.redacteur]
+role = "Generer un rapport de synthese clair, source et actionnable."
+output = "data/rapports_generes/rapport_veille.md"
+
+[agents.evaluateur]
+role = "Controler la coherence, les sources, les risques d'hallucination et les limites."
+output = "logs/agent_evaluateur.log"
+
+[fallback]
+use_cached_data = true
+use_manual_dataset = true
+llm_required = false
+on_api_failure = "continuer avec synthese extractive et logs d'erreur"
+
+[anti_hallucination]
+require_source_url = true
+separate_facts_from_recommendations = true
+cite_internal_chunks = true
+unknown_policy = "indiquer explicitement information non verifiee"
+
+[integration.n8n]
+enabled = true
+workflow_file = "n8n/workflow_veille_frameworks_ia.json"
+api_base_url = "http://127.0.0.1:8000"
+role = "orchestration externe, planification, validation et diffusion"
+export_csv = "data/exports/recommendations_google_sheets.csv"
+
+[integration.mcp]
+enabled = true
+server_file = "source/mcp_server.py"
+role = "exposer les outils de veille a des clients agents compatibles MCP"
+tools = [
+  "run_market_watch",
+  "get_pipeline_status",
+  "list_generated_reports",
+  "get_latest_report",
+  "get_agent_logs",
+  "set_report_validation"
+]
+
+[human_in_the_loop]
+enabled = true
+validation_file = "data/validation/latest_validation.json"
+policy = "le rapport doit etre approuve avant diffusion externe"

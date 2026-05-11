@@ -1,0 +1,190 @@
+{
+  "name": "Assistant Veille Frameworks IA - Agentique MCP",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Declenchement manuel",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [1],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "weekly-schedule",
+      "name": "Planification hebdomadaire",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 180]
+    },
+    {
+      "parameters": {
+        "content": "Agent Collecteur\\nSystem prompt: collecter les signaux fiables, utiliser GitHub API, journaliser les echecs et activer fallback.",
+        "height": 160,
+        "width": 260
+      },
+      "id": "agent-collecteur-note",
+      "name": "AI Agent - Collecteur",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [280, -160]
+    },
+    {
+      "parameters": {
+        "content": "Agent Analyste/RAG\\nSystem prompt: interroger ChromaDB via MCP/API, croiser sources externes et base interne, produire score.",
+        "height": 160,
+        "width": 260
+      },
+      "id": "agent-rag-note",
+      "name": "AI Agent - RAG Analyste",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [580, -160]
+    },
+    {
+      "parameters": {
+        "content": "Agent Redacteur/Evaluateur\\nSystem prompt: generer rapport, valider schema JSON, detecter hallucinations, attendre validation humaine.",
+        "height": 160,
+        "width": 280
+      },
+      "id": "agent-redacteur-note",
+      "name": "AI Agent - Redacteur Evaluateur",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [900, -160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/pipeline/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"use_live\": true }"
+      },
+      "id": "run-pipeline",
+      "name": "Executer pipeline agentique",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [320, 80]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8000/reports/latest",
+        "responseFormat": "string"
+      },
+      "id": "get-report",
+      "name": "Recuperer dernier rapport",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [620, 80]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8000/exports/recommendations"
+      },
+      "id": "get-export",
+      "name": "Preparer export Google Sheets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 80]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8000/pipeline/status"
+      },
+      "id": "get-status",
+      "name": "Verifier statut + validation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1220, 80]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "validation-approved",
+              "leftValue": "={{ $json.human_validation.status }}",
+              "rightValue": "approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-approved",
+      "name": "Human-in-the-Loop approuve ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1520, 80]
+    },
+    {
+      "parameters": {},
+      "id": "diffusion-note",
+      "name": "Diffusion controlee apres validation",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1820, 20]
+    },
+    {
+      "parameters": {},
+      "id": "fallback-note",
+      "name": "Fallback correction humaine",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1820, 220]
+    }
+  ],
+  "connections": {
+    "Declenchement manuel": {
+      "main": [[{"node": "Executer pipeline agentique", "type": "main", "index": 0}]]
+    },
+    "Planification hebdomadaire": {
+      "main": [[{"node": "Executer pipeline agentique", "type": "main", "index": 0}]]
+    },
+    "Executer pipeline agentique": {
+      "main": [[{"node": "Recuperer dernier rapport", "type": "main", "index": 0}]]
+    },
+    "Recuperer dernier rapport": {
+      "main": [[{"node": "Preparer export Google Sheets", "type": "main", "index": 0}]]
+    },
+    "Preparer export Google Sheets": {
+      "main": [[{"node": "Verifier statut + validation", "type": "main", "index": 0}]]
+    },
+    "Verifier statut + validation": {
+      "main": [[{"node": "Human-in-the-Loop approuve ?", "type": "main", "index": 0}]]
+    },
+    "Human-in-the-Loop approuve ?": {
+      "main": [
+        [{"node": "Diffusion controlee apres validation", "type": "main", "index": 0}],
+        [{"node": "Fallback correction humaine", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "prototype-agentique-mcp",
+  "meta": {
+    "description": "Workflow n8n avec orchestration, notes AI Agents, validation humaine, fallback et export Google Sheets."
+  }
+}

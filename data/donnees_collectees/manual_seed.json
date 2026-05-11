@@ -1,0 +1,48 @@
+[
+  {
+    "framework": "LangChain",
+    "title": "LangChain et LangGraph renforcent l'orchestration d'agents",
+    "source": "donnee_de_demo",
+    "url": "https://github.com/langchain-ai/langchain",
+    "date": "2026-05-11",
+    "summary": "LangChain reste tres visible dans l'ecosysteme, avec une orientation croissante vers LangGraph pour les workflows agents controles et observables.",
+    "category": "orchestration_agents"
+  },
+  {
+    "framework": "LlamaIndex",
+    "title": "LlamaIndex confirme son positionnement RAG",
+    "source": "donnee_de_demo",
+    "url": "https://github.com/run-llama/llama_index",
+    "date": "2026-05-11",
+    "summary": "LlamaIndex est pertinent pour construire rapidement des pipelines d'ingestion, d'indexation et de retrieval sur documents internes.",
+    "category": "rag"
+  },
+  {
+    "framework": "CrewAI",
+    "title": "CrewAI simplifie la demonstration multi-agents",
+    "source": "donnee_de_demo",
+    "url": "https://github.com/crewAIInc/crewAI",
+    "date": "2026-05-11",
+    "summary": "CrewAI offre une abstraction lisible pour definir des agents specialises, leurs roles, leurs taches et leurs sorties.",
+    "category": "multi_agents"
+  },
+  {
+    "framework": "Haystack",
+    "title": "Haystack reste adapte aux pipelines RAG industriels",
+    "source": "donnee_de_demo",
+    "url": "https://github.com/deepset-ai/haystack",
+    "date": "2026-05-11",
+    "summary": "Haystack est souvent choisi pour des architectures RAG modulaires, robustes et proches de besoins production.",
+    "category": "rag_industriel"
+  },
+  {
+    "framework": "DSPy",
+    "title": "DSPy met l'accent sur l'optimisation des prompts et programmes LM",
+    "source": "donnee_de_demo",
+    "url": "https://github.com/stanfordnlp/dspy",
+    "date": "2026-05-11",
+    "summary": "DSPy propose une approche programmee et optimisable des pipelines LLM, utile lorsque la qualite des prompts doit etre mesuree et amelioree.",
+    "category": "prompt_optimization"
+  }
+]
+
