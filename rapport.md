@@ -75,7 +75,7 @@ Il affiche :
 - un graphique des scores d'impact ;
 - la liste des rapports generes avec telechargement ;
 - les logs recents par agent ;
-- un bouton pour relancer la pipeline depuis l'interface.
+- un bouton pour relancer la pipeline depuis l'interface ;
 - une validation humaine avant diffusion ;
 - un export CSV compatible Google Sheets.
 
@@ -100,12 +100,13 @@ La deuxieme couche est MCP, Model Context Protocol. Le serveur `source/mcp_serve
 - `list_generated_reports`
 - `get_latest_report`
 - `get_agent_logs`
+- `set_report_validation`
 
 Cette separation donne une architecture plus propre :
 
 - n8n gere l'orchestration externe et la planification ;
 - MCP gere l'interoperabilite avec des agents IA externes ;
-- la pipeline Python conserve le raisonnement metier et les logs agents.
+- la pipeline Python conserve le raisonnement metier et les logs agents ;
 - Streamlit fournit la validation Human-in-the-Loop.
 
 ```mermaid
@@ -168,7 +169,6 @@ Le systeme n'exige pas de LLM pour fonctionner. Si une API echoue, il continue a
 - MCP Python SDK : serveur MCP pour interoperabilite agentique.
 - TOML : configuration.
 - Markdown : rapport et documentation.
-- ChromaDB : base vectorielle persistante.
 
 ## 11. Conclusion
 

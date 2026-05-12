@@ -10,9 +10,11 @@ flowchart TD
     E --> F["Agent filtreur"]
     F --> G["Items dedupliques et classes"]
     H["Base interne simulee"] --> I["Chunking avec overlap"]
-    I --> J["Index RAG lexical"]
+    I --> J["Index vectoriel ChromaDB"]
+    I --> S["Fallback lexical NumPy"]
     G --> K["Agent RAG"]
     J --> K
+    S --> K
     K --> L["Contexte interne pertinent"]
     L --> M["Agent analyste"]
     G --> M
@@ -27,4 +29,3 @@ flowchart TD
 ## Description courte
 
 Le systeme collecte des signaux externes, les nettoie, recupere les informations internes pertinentes avec une pipeline RAG, puis genere une synthese priorisee. Chaque agent produit des logs horodates.
-

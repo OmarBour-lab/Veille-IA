@@ -71,7 +71,7 @@ Regles :
 - Commencer par un resume executif.
 - Citer les sources externes.
 - Citer les passages internes recuperes par le RAG.
-- Eviter les affirmations non sourcées.
+- Eviter les affirmations non sourcees.
 
 ## Agent Evaluateur
 
@@ -84,4 +84,3 @@ Regles :
 - Corriger les champs JSON manquants si possible.
 - Marquer comme "A_CORRIGER" toute sortie critique non sourcee.
 - Verifier le statut Human-in-the-Loop avant diffusion.
-

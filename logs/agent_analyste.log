@@ -18,3 +18,15 @@
 {"timestamp": "2026-05-11T13:55:12+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Haystack", "priority": "haute", "score": 5}}
 {"timestamp": "2026-05-11T13:55:12+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "DSPy", "priority": "haute", "score": 5}}
 {"timestamp": "2026-05-11T13:55:12+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Smolagents", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:04+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-12T08:19:04+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-12T08:19:04+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-12T08:19:04+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-12T08:19:04+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LangChain", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LangGraph", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "CrewAI", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "AutoGen", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Haystack", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "DSPy", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Smolagents", "priority": "haute", "score": 5}}

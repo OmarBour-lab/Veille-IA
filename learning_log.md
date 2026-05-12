@@ -176,3 +176,18 @@ Ameliorations possibles :
 - Ajouter un vrai client MCP pendant la soutenance.
 - Ajouter une boucle de self-correction LLM plus avancee avec Pydantic.
 
+## Entree 12 - Consolidation finale des livrables
+
+Objectif : verifier que les fichiers de rendu restent coherents avec la version actuelle du prototype.
+
+Travail realise :
+
+- Relecture et harmonisation du `README.md`.
+- Verification du `rapport.md`, du logigramme, de la documentation RAG et des strategies de fallback.
+- Correction du logigramme pour representer ChromaDB comme base vectorielle principale et NumPy comme fallback lexical.
+- Clarification de la configuration : GitHub et le fallback local sont actifs, arXiv reste hors perimetre du prototype actuel.
+- Verification que les logs agents restent conserves comme preuves d'execution, tandis que les rapports generes, exports, validations et bases vectorielles restent ignores par Git.
+
+Apprentissage :
+
+La documentation doit suivre l'evolution du code. Quand on ajoute n8n, MCP, Streamlit ou ChromaDB, il faut mettre a jour le rapport, le learning log et les schemas pour eviter de presenter une architecture differente de celle qui tourne vraiment.

@@ -29,7 +29,7 @@ keywords = [
 
 [sources]
 github_enabled = true
-arxiv_enabled = true
+arxiv_enabled = false
 manual_fallback_enabled = true
 max_items_per_source = 20
 
