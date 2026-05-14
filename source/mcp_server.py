@@ -15,6 +15,7 @@ from veille_agents import (
     LOG_DIR,
     REPORT_DIR,
     get_human_validation,
+    llm_configured,
     run_pipeline,
     set_human_validation,
 )
@@ -33,9 +34,9 @@ def read_json(path: Path, default):
 
 
 @mcp.tool()
-def run_market_watch(use_live: bool = True) -> dict:
-    """Execute la pipeline de veille IA et genere un nouveau rapport horodate."""
-    return run_pipeline(use_live=use_live)
+def run_market_watch(use_live: bool = True, use_llm: bool = True) -> dict:
+    """Execute la pipeline de veille IA avec agents LLM et genere un nouveau rapport horodate."""
+    return run_pipeline(use_live=use_live, use_llm=use_llm)
 
 
 @mcp.tool()
@@ -51,7 +52,18 @@ def get_pipeline_status() -> dict:
         "analyses": len(analyses),
         "reports": len(reports),
         "latest_report": reports[0].name if reports else None,
+        "llm_configured": llm_configured(),
         "human_validation": get_human_validation(),
+    }
+
+
+@mcp.tool()
+def get_llm_status() -> dict:
+    """Retourne l'etat de configuration des agents LLM GitHub Models."""
+    return {
+        "enabled": True,
+        "configured": llm_configured(),
+        "provider": "github_models",
     }
 
 

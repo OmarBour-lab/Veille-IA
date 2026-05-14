@@ -18,6 +18,7 @@ from veille_agents import (
     LOG_DIR,
     REPORT_DIR,
     get_human_validation,
+    llm_configured,
     run_pipeline,
     set_human_validation,
 )
@@ -32,6 +33,7 @@ app = FastAPI(
 
 class RunRequest(BaseModel):
     use_live: bool = True
+    use_llm: bool = True
 
 
 class ValidationRequest(BaseModel):
@@ -51,12 +53,21 @@ def read_json(path: Path, default):
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "service": "veille-frameworks-ia"}
+    return {"status": "ok", "service": "veille-frameworks-ia", "llm_configured": llm_configured()}
+
+
+@app.get("/llm/status")
+def llm_status() -> dict:
+    return {
+        "enabled": True,
+        "configured": llm_configured(),
+        "provider": "github_models",
+    }
 
 
 @app.post("/pipeline/run")
 def run_pipeline_endpoint(request: RunRequest) -> dict:
-    return run_pipeline(use_live=request.use_live)
+    return run_pipeline(use_live=request.use_live, use_llm=request.use_llm)
 
 
 @app.get("/pipeline/status")
@@ -71,6 +82,7 @@ def pipeline_status() -> dict:
         "analyses": len(analyses),
         "reports": len(reports),
         "latest_report": reports[0].name if reports else None,
+        "llm_configured": llm_configured(),
         "human_validation": get_human_validation(),
     }
 

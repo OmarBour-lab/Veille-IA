@@ -19,6 +19,7 @@ from veille_agents import (
     LOG_DIR,
     REPORT_DIR,
     get_human_validation,
+    llm_configured,
     run_pipeline,
     set_human_validation,
 )
@@ -454,6 +455,38 @@ def render_priority_table(dataframe: pd.DataFrame) -> str:
     )
 
 
+def get_langgraph_visual() -> dict:
+    png_path = EXPORT_DIR / "orchestration_langgraph.png"
+    mermaid_path = EXPORT_DIR / "orchestration_langgraph.mmd"
+    if png_path.exists() and mermaid_path.exists():
+        return {
+            "png_exists": True,
+            "png_path": str(png_path),
+            "mermaid_path": str(mermaid_path),
+            "mermaid": mermaid_path.read_text(encoding="utf-8"),
+        }
+    try:
+        import veille_agents
+
+        if hasattr(veille_agents, "export_langgraph_visual"):
+            return veille_agents.export_langgraph_visual()
+    except Exception as exc:
+        return {
+            "png_exists": False,
+            "png_path": str(png_path),
+            "mermaid_path": str(mermaid_path),
+            "mermaid": mermaid_path.read_text(encoding="utf-8") if mermaid_path.exists() else "",
+            "error": str(exc),
+        }
+    return {
+        "png_exists": png_path.exists(),
+        "png_path": str(png_path),
+        "mermaid_path": str(mermaid_path),
+        "mermaid": mermaid_path.read_text(encoding="utf-8") if mermaid_path.exists() else "",
+        "error": "La fonction de generation LangGraph n'est pas disponible dans le module charge.",
+    }
+
+
 analyses = load_json(COLLECTED_DIR / "items_analyses.json", [])
 collected = load_json(COLLECTED_DIR / "items_collectes.json", [])
 filtered = load_json(COLLECTED_DIR / "items_filtres.json", [])
@@ -478,9 +511,11 @@ with st.sidebar:
 
     st.subheader("Execution")
     use_live = st.toggle("Collecte GitHub live", value=True)
+    use_llm = st.toggle("Agents LLM GitHub Models", value=True)
+    st.caption("LLM pret" if llm_configured() else "LLM non configure: fallback si execution lancee")
     if st.button("Relancer la pipeline", type="primary", width="stretch"):
         with st.spinner("Execution de la pipeline en cours..."):
-            result = run_pipeline(use_live=use_live)
+            result = run_pipeline(use_live=use_live, use_llm=use_llm)
         st.success("Pipeline terminee")
         with st.expander("Resultat technique"):
             st.json(result)
@@ -561,7 +596,7 @@ else:
     )
     st.bar_chart(chart_df, x="framework", y="impact_score", height=300)
 
-tabs = st.tabs(["Rapports", "Logs agents", "Donnees et exports"])
+tabs = st.tabs(["Rapports", "Logs agents", "Donnees et exports", "Graphe d'Orchestration"])
 
 with tabs[0]:
     reports = sorted(REPORT_DIR.glob("rapport_veille*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -612,3 +647,23 @@ with tabs[2]:
     data_cols[2].info(f"Validation : `{validation.get('status', 'pending')}`")
     if export_path.exists():
         st.dataframe(pd.read_csv(export_path), width="stretch", hide_index=True)
+
+with tabs[3]:
+    st.markdown('<div class="section-title">Graphe d\'Orchestration</div>', unsafe_allow_html=True)
+    visual = get_langgraph_visual()
+    if visual.get("png_exists"):
+        st.image(visual["png_path"], caption="Graphe LangGraph genere depuis la pipeline reelle.", width="stretch")
+    else:
+        st.warning("Image PNG indisponible. Affichage du graphe Mermaid genere par LangGraph.")
+        st.code(visual.get("mermaid", ""), language="mermaid")
+        if visual.get("error"):
+            st.caption(visual["error"])
+    st.markdown("**Execution actuelle**")
+    latest_orchestrator = load_log(LOG_DIR / "orchestrateur_langgraph.log", limit=1)
+    if latest_orchestrator.empty:
+        st.info("Aucune execution LangGraph journalisee pour le moment.")
+    else:
+        compact = latest_orchestrator.copy()
+        if "payload" in compact.columns:
+            compact["payload"] = compact["payload"].apply(lambda value: json.dumps(value, ensure_ascii=False))
+        st.dataframe(compact, width="stretch", hide_index=True)

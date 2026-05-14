@@ -7,10 +7,11 @@ import re
 import time
 import hashlib
 import csv
+import warnings
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, TypedDict
 
 try:
     import numpy as np
@@ -38,6 +39,24 @@ except Exception:
     RecursiveCharacterTextSplitter = None
 
 try:
+    from langchain_openai import ChatOpenAI
+except Exception:
+    ChatOpenAI = None
+
+warnings.filterwarnings(
+    "ignore",
+    message="The default value of `allowed_objects` will change in a future version.*",
+    category=Warning,
+)
+
+try:
+    from langgraph.graph import END, START, StateGraph
+except Exception:
+    END = None
+    START = None
+    StateGraph = None
+
+try:
     import chromadb
 except Exception:
     chromadb = None
@@ -52,6 +71,23 @@ REPORT_DIR = DATA_DIR / "rapports_generes"
 VECTOR_DIR = DATA_DIR / "vector_db"
 EXPORT_DIR = DATA_DIR / "exports"
 VALIDATION_DIR = DATA_DIR / "validation"
+
+LLM_MODEL_DEFAULT = "openai/gpt-4o"
+LLM_BASE_URL_DEFAULT = "https://models.github.ai/inference"
+LLM_AGENT_TEMPERATURE = 0.2
+
+
+class PipelineState(TypedDict, total=False):
+    use_live: bool
+    use_llm: bool
+    chunks: list[dict]
+    vector_index: bool
+    collected: list[dict]
+    filtered: list[dict]
+    analyses: list[dict]
+    report: str
+    export_path: str
+    evaluation: dict
 
 
 def load_env_file(path: Path | None = None) -> None:
@@ -88,6 +124,84 @@ def log(agent: str, message: str, payload: dict | None = None) -> None:
         record["payload"] = payload
     with (LOG_DIR / f"{agent}.log").open("a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def llm_configured() -> bool:
+    load_env_file()
+    token = os.getenv("GITHUB_MODELS_TOKEN") or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_API_KEY")
+    return bool(ChatOpenAI and token)
+
+
+def build_llm() -> ChatOpenAI:
+    load_env_file()
+    if ChatOpenAI is None:
+        raise RuntimeError("langchain-openai n'est pas installe.")
+    token = os.getenv("GITHUB_MODELS_TOKEN") or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_API_KEY")
+    if not token:
+        raise RuntimeError("Aucun token GitHub Models trouve: definir GITHUB_MODELS_TOKEN, GITHUB_API_KEY ou GITHUB_TOKEN.")
+    return ChatOpenAI(
+        model=os.getenv("GITHUB_MODELS_MODEL", LLM_MODEL_DEFAULT),
+        api_key=token,
+        base_url=os.getenv("GITHUB_MODELS_BASE_URL", LLM_BASE_URL_DEFAULT),
+        temperature=LLM_AGENT_TEMPERATURE,
+        timeout=45,
+        max_retries=1,
+    )
+
+
+def compact_json(data, max_chars: int = 24000) -> str:
+    text = json.dumps(data, ensure_ascii=False, indent=2, default=str)
+    if len(text) <= max_chars:
+        return text
+    return text[:max_chars] + "\n...TRONQUE_POUR_CONTEXT_WINDOW..."
+
+
+def extract_json(text: str):
+    text = text.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?", "", text, flags=re.IGNORECASE).strip()
+        text = re.sub(r"```$", "", text).strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        start_candidates = [idx for idx in [text.find("{"), text.find("[")] if idx != -1]
+        if not start_candidates:
+            raise
+        start = min(start_candidates)
+        end = max(text.rfind("}"), text.rfind("]"))
+        if end <= start:
+            raise
+        return json.loads(text[start : end + 1])
+
+
+def call_llm_agent(agent: str, system_prompt: str, payload: dict, output: str = "json"):
+    llm = build_llm()
+    if output == "json":
+        instruction = (
+            "Retourne uniquement du JSON valide, sans markdown. "
+            "N'invente aucune URL, aucune source et aucune metrique absente du payload."
+        )
+    else:
+        instruction = (
+            "Retourne uniquement le contenu Markdown final. "
+            "N'invente aucune URL, aucune source et separe clairement faits et recommandations."
+        )
+    messages = [
+        ("system", f"{system_prompt}\n\n{instruction}"),
+        ("human", compact_json(payload)),
+    ]
+    response = llm.invoke(messages)
+    content = getattr(response, "content", str(response))
+    log(agent, "Appel LLM reussi", {"model": os.getenv("GITHUB_MODELS_MODEL", LLM_MODEL_DEFAULT), "output": output})
+    return extract_json(content) if output == "json" else content.strip()
+
+
+def log_llm_fallback(agent: str, exc: Exception) -> None:
+    log(
+        agent,
+        "Fallback deterministe active apres erreur LLM",
+        {"error": str(exc), "llm_configured": llm_configured()},
+    )
 
 
 def load_json(path: Path) -> list[dict]:
@@ -293,7 +407,7 @@ def fetch_github_repo(framework: str, repo: str, timeout: int = 8) -> dict | Non
         return None
 
 
-def collect_market_items(use_live: bool = True) -> list[dict]:
+def deterministic_collect_market_items(use_live: bool = True) -> list[dict]:
     ensure_dirs()
     seed_path = COLLECTED_DIR / "manual_seed.json"
     items = load_json(seed_path)
@@ -313,12 +427,62 @@ def collect_market_items(use_live: bool = True) -> list[dict]:
             if item:
                 items.append(item)
             time.sleep(0.1)
-    save_json(COLLECTED_DIR / "items_collectes.json", items)
-    log("agent_collecteur", "Collecte terminee", {"items": len(items), "live": use_live})
     return items
 
 
-def filter_items(items: Iterable[dict], keywords: Iterable[str] | None = None) -> list[dict]:
+def collect_market_items(use_live: bool = True, use_llm: bool = True) -> list[dict]:
+    raw_items = deterministic_collect_market_items(use_live=use_live)
+    if use_llm:
+        try:
+            llm_items = call_llm_agent(
+                "agent_collecteur",
+                (
+                    "Tu es l'agent collecteur LLM d'une cellule de veille IA. "
+                    "A partir des signaux bruts fournis, normalise les items, retire les donnees hors sujet "
+                    "et conserve uniquement des tendances liees aux frameworks IA surveilles. "
+                    "Chaque item doit contenir: framework, title, source, url, date, summary, category, metrics. "
+                    "Tu dois conserver les URL et metriques d'origine sans invention. "
+                    "Si les signaux bruts sont deja pertinents, conserve-les: ne retourne jamais une liste vide "
+                    "lorsque raw_items contient des items valides."
+                ),
+                {"use_live": use_live, "raw_items": raw_items},
+            )
+            if isinstance(llm_items, dict):
+                llm_items = llm_items.get("items", [])
+            if not isinstance(llm_items, list):
+                raise ValueError("L'agent collecteur LLM n'a pas retourne une liste JSON.")
+            items = [validate_collected_item(item) for item in llm_items if isinstance(item, dict)]
+            if not items and raw_items:
+                items = [validate_collected_item(item) for item in raw_items if isinstance(item, dict)]
+                log("agent_collecteur", "Sortie LLM vide corrigee avec les signaux bruts", {"items": len(items)})
+            save_json(COLLECTED_DIR / "items_collectes.json", items)
+            log("agent_collecteur", "Collecte LLM terminee", {"items": len(items), "live": use_live})
+            return items
+        except Exception as exc:
+            log_llm_fallback("agent_collecteur", exc)
+    save_json(COLLECTED_DIR / "items_collectes.json", raw_items)
+    log("agent_collecteur", "Collecte deterministe terminee", {"items": len(raw_items), "live": use_live})
+    return raw_items
+
+
+def validate_collected_item(item: dict) -> dict:
+    defaults = {
+        "framework": "Inconnu",
+        "title": "Titre non disponible",
+        "source": "source_non_precisee",
+        "url": "",
+        "date": now_iso()[:10],
+        "summary": "Synthese non disponible",
+        "category": "non_classee",
+        "metrics": {},
+    }
+    normalized = {**defaults, **item}
+    if not isinstance(normalized.get("metrics"), dict):
+        normalized["metrics"] = {}
+    return normalized
+
+
+def deterministic_filter_items(items: Iterable[dict], keywords: Iterable[str] | None = None) -> list[dict]:
     keywords = [k.lower() for k in (keywords or ["agent", "rag", "release", "github", "orchestration", "benchmark"])]
     items = list(items)
     if pd is not None and items:
@@ -339,14 +503,47 @@ def filter_items(items: Iterable[dict], keywords: Iterable[str] | None = None) -
             relevance = sum(1 for k in keywords if k in text)
             if relevance > 0 or item.get("source") == "github_api":
                 filtered.append({**item, "relevance_score": relevance})
-    save_json(COLLECTED_DIR / "items_filtres.json", filtered)
-    log("agent_filtreur", "Filtrage termine", {"input": len(items), "output": len(filtered)})
     return filtered
 
 
-def analyze_item(item: dict, chunks: list[dict]) -> dict:
+def filter_items(items: Iterable[dict], keywords: Iterable[str] | None = None, use_llm: bool = True) -> list[dict]:
+    items = list(items)
+    keywords = list(keywords or ["agent", "rag", "release", "github", "orchestration", "benchmark"])
+    if use_llm:
+        try:
+            filtered = call_llm_agent(
+                "agent_filtreur",
+                (
+                    "Tu es l'agent filtreur LLM. Selectionne les items pertinents pour une veille "
+                    "sur les frameworks IA, supprime les doublons et ajoute un champ relevance_score entre 0 et 5. "
+                    "Ne conserve pas les items sans rapport avec RAG, agents, orchestration, releases, benchmarks, "
+                    "evaluation, securite ou adoption marche. Si les items d'entree sont pertinents, conserve-les: "
+                    "ne retourne jamais une liste vide lorsque des items valides existent."
+                ),
+                {"keywords": keywords, "items": items},
+            )
+            if isinstance(filtered, dict):
+                filtered = filtered.get("items", [])
+            if not isinstance(filtered, list):
+                raise ValueError("L'agent filtreur LLM n'a pas retourne une liste JSON.")
+            filtered = [validate_collected_item(item) for item in filtered if isinstance(item, dict)]
+            if not filtered and items:
+                filtered = deterministic_filter_items(items, keywords)
+                log("agent_filtreur", "Sortie LLM vide corrigee par filtrage local", {"output": len(filtered)})
+            save_json(COLLECTED_DIR / "items_filtres.json", filtered)
+            log("agent_filtreur", "Filtrage LLM termine", {"input": len(items), "output": len(filtered)})
+            return filtered
+        except Exception as exc:
+            log_llm_fallback("agent_filtreur", exc)
+    filtered = deterministic_filter_items(items, keywords)
+    save_json(COLLECTED_DIR / "items_filtres.json", filtered)
+    log("agent_filtreur", "Filtrage deterministe termine", {"input": len(items), "output": len(filtered)})
+    return filtered
+
+
+def deterministic_analyze_item(item: dict, chunks: list[dict], context: list[dict] | None = None) -> dict:
     query = f"{item.get('framework')} {item.get('summary')} {item.get('category')}"
-    context = retrieve(query, chunks, top_k=4)
+    context = context if context is not None else retrieve(query, chunks, top_k=4)
     internal_match = sum(c["score"] for c in context)
     source_reliability = 2 if item.get("source") in {"github_api", "donnee_de_demo"} else 1
     metrics = item.get("metrics")
@@ -372,10 +569,77 @@ def analyze_item(item: dict, chunks: list[dict]) -> dict:
         "priority": priority,
         "internal_context": context,
         "recommendation": recommendation,
+        "recommendation_source": "fallback_deterministe",
     }
     result = validate_analysis_schema(result)
-    log("agent_analyste", "Item analyse", {"framework": item.get("framework"), "priority": priority, "score": impact_score})
     return result
+
+
+def generate_llm_recommendation(item: dict, context: list[dict], baseline: dict) -> str:
+    result = call_llm_agent(
+        "agent_analyste",
+        (
+            "Tu es l'agent analyste LLM charge uniquement de produire une recommandation. "
+            "Genere une recommandation courte, concrete et actionnable pour l'equipe technique. "
+            "Elle doit etre basee uniquement sur le signal externe, le contexte interne RAG et la baseline fournis. "
+            "Ne mentionne pas de source absente et n'invente pas de faits."
+        ),
+        {"item": item, "internal_context": context, "baseline": baseline},
+    )
+    if isinstance(result, dict):
+        recommendation = result.get("recommendation")
+    else:
+        recommendation = None
+    if not isinstance(recommendation, str) or not recommendation.strip():
+        raise ValueError("L'agent analyste LLM n'a pas genere de recommandation valide.")
+    return recommendation.strip()
+
+
+def analyze_item(item: dict, chunks: list[dict], use_llm: bool = True) -> dict:
+    query = f"{item.get('framework')} {item.get('summary')} {item.get('category')}"
+    context = retrieve(query, chunks, top_k=4)
+    baseline = deterministic_analyze_item(item, chunks, context=context)
+    if use_llm:
+        try:
+            llm_result = call_llm_agent(
+                "agent_analyste",
+                (
+                    "Tu es l'agent analyste LLM. Croise un signal de marche externe avec le contexte interne RAG. "
+                    "Retourne un objet JSON avec impact_score entre 0 et 5, priority parmi haute/moyenne/basse, "
+                    "recommendation actionnable, summary enrichie et justification courte. "
+                    "Le champ recommendation est obligatoire et doit etre redige par toi, pas copie depuis la baseline. "
+                    "Tu dois citer uniquement les informations presentes dans item, internal_context ou baseline."
+                ),
+                {"item": item, "internal_context": context, "baseline": baseline},
+            )
+            if not isinstance(llm_result, dict):
+                raise ValueError("L'agent analyste LLM n'a pas retourne un objet JSON.")
+            recommendation = llm_result.get("recommendation")
+            if not isinstance(recommendation, str) or not recommendation.strip():
+                recommendation = generate_llm_recommendation(item, context, baseline)
+            result = validate_analysis_schema(
+                {
+                    **item,
+                    **llm_result,
+                    "recommendation": recommendation.strip(),
+                    "recommendation_source": "llm",
+                    "internal_context": context,
+                }
+            )
+            log(
+                "agent_analyste",
+                "Item analyse par LLM",
+                {"framework": result.get("framework"), "priority": result.get("priority"), "score": result.get("impact_score")},
+            )
+            return result
+        except Exception as exc:
+            log_llm_fallback("agent_analyste", exc)
+    log(
+        "agent_analyste",
+        "Item analyse par fallback deterministe",
+        {"framework": baseline.get("framework"), "priority": baseline.get("priority"), "score": baseline.get("impact_score")},
+    )
+    return baseline
 
 
 def validate_analysis_schema(item: dict) -> dict:
@@ -412,8 +676,73 @@ def validate_analysis_schema(item: dict) -> dict:
     return item
 
 
-def analyze_items(items: list[dict], chunks: list[dict]) -> list[dict]:
-    results = [analyze_item(item, chunks) for item in items]
+def analyze_items(items: list[dict], chunks: list[dict], use_llm: bool = True) -> list[dict]:
+    prepared = []
+    for item in items:
+        query = f"{item.get('framework')} {item.get('summary')} {item.get('category')}"
+        context = retrieve(query, chunks, top_k=4)
+        baseline = deterministic_analyze_item(item, chunks, context=context)
+        prepared.append({"item": item, "internal_context": context, "baseline": baseline})
+
+    if use_llm and prepared:
+        try:
+            llm_results = call_llm_agent(
+                "agent_analyste",
+                (
+                    "Tu es l'agent analyste LLM. Analyse chaque item fourni en batch. "
+                    "Retourne uniquement une liste JSON, avec un objet par item et dans le meme ordre. "
+                    "Chaque objet doit contenir: framework, impact_score entre 0 et 5, priority parmi haute/moyenne/basse, "
+                    "summary, justification et recommendation. Le champ recommendation est obligatoire et doit etre "
+                    "redige par toi, pas copie depuis la baseline. Base-toi uniquement sur item, internal_context et baseline."
+                ),
+                {"items": prepared},
+            )
+            if isinstance(llm_results, dict):
+                llm_results = llm_results.get("items", llm_results.get("analyses", []))
+            if not isinstance(llm_results, list):
+                raise ValueError("L'agent analyste LLM batch n'a pas retourne une liste JSON.")
+            results = []
+            for prepared_item, llm_result in zip(prepared, llm_results):
+                if not isinstance(llm_result, dict):
+                    raise ValueError("Une analyse LLM batch n'est pas un objet JSON.")
+                recommendation = llm_result.get("recommendation")
+                if not isinstance(recommendation, str) or not recommendation.strip():
+                    recommendation = generate_llm_recommendation(
+                        prepared_item["item"],
+                        prepared_item["internal_context"],
+                        prepared_item["baseline"],
+                    )
+                result = validate_analysis_schema(
+                    {
+                        **prepared_item["item"],
+                        **llm_result,
+                        "recommendation": recommendation.strip(),
+                        "recommendation_source": "llm",
+                        "internal_context": prepared_item["internal_context"],
+                    }
+                )
+                results.append(result)
+            if len(results) != len(prepared):
+                raise ValueError("Le nombre d'analyses LLM ne correspond pas au nombre d'items.")
+            save_json(COLLECTED_DIR / "items_analyses.json", results)
+            log("agent_analyste", "Analyse batch LLM terminee", {"items": len(results)})
+            return results
+        except Exception as exc:
+            log_llm_fallback("agent_analyste", exc)
+
+    results = []
+    for prepared_item in prepared:
+        baseline = prepared_item["baseline"]
+        log(
+            "agent_analyste",
+            "Item analyse par fallback deterministe",
+            {
+                "framework": baseline.get("framework"),
+                "priority": baseline.get("priority"),
+                "score": baseline.get("impact_score"),
+            },
+        )
+        results.append(baseline)
     save_json(COLLECTED_DIR / "items_analyses.json", results)
     return results
 
@@ -431,12 +760,21 @@ def export_recommendations_csv(analyses: list[dict]) -> Path:
                 "category": item.get("category"),
                 "recommendation": item.get("recommendation"),
                 "source_url": item.get("url"),
+                "recommendation_source": item.get("recommendation_source", "non_precisee"),
             }
         )
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["framework", "priority", "impact_score", "category", "recommendation", "source_url"],
+            fieldnames=[
+                "framework",
+                "priority",
+                "impact_score",
+                "category",
+                "recommendation",
+                "source_url",
+                "recommendation_source",
+            ],
         )
         writer.writeheader()
         writer.writerows(rows)
@@ -481,10 +819,25 @@ def top_framework_summaries(analyses: list[dict], limit: int = 5) -> list[dict]:
     return selected
 
 
-def generate_report(analyses: list[dict]) -> str:
-    analyses = sorted(analyses, key=lambda x: x.get("impact_score", 0), reverse=True)
+def save_report(report: str, analyses_count: int) -> str:
+    ensure_dirs()
     generated_at = datetime.now()
     timestamp = generated_at.strftime("%Y%m%d_%H%M%S")
+    dated_path = REPORT_DIR / f"rapport_veille_{timestamp}.md"
+    latest_path = REPORT_DIR / "rapport_veille.md"
+    dated_path.write_text(report, encoding="utf-8")
+    latest_path.write_text(report, encoding="utf-8")
+    log(
+        "agent_redacteur",
+        "Rapport genere",
+        {"path": str(dated_path), "latest_path": str(latest_path), "items": analyses_count},
+    )
+    return report
+
+
+def deterministic_generate_report(analyses: list[dict]) -> str:
+    analyses = sorted(analyses, key=lambda x: x.get("impact_score", 0), reverse=True)
+    generated_at = datetime.now()
     lines = [
         "# Rapport de veille - Frameworks IA",
         "",
@@ -532,50 +885,240 @@ def generate_report(analyses: list[dict]) -> str:
             "- Une validation humaine peut approuver ou rejeter le dernier rapport avant diffusion.",
         ]
     )
-    report = "\n".join(lines)
-    dated_path = REPORT_DIR / f"rapport_veille_{timestamp}.md"
-    latest_path = REPORT_DIR / "rapport_veille.md"
-    dated_path.write_text(report, encoding="utf-8")
-    latest_path.write_text(report, encoding="utf-8")
-    log(
-        "agent_redacteur",
-        "Rapport genere",
-        {"path": str(dated_path), "latest_path": str(latest_path), "items": len(analyses)},
-    )
-    return report
+    return "\n".join(lines)
 
 
-def evaluate_outputs(analyses: list[dict]) -> dict:
+def generate_report(analyses: list[dict], use_llm: bool = True) -> str:
+    analyses = sorted(analyses, key=lambda x: x.get("impact_score", 0), reverse=True)
+    if use_llm:
+        try:
+            report = call_llm_agent(
+                "agent_redacteur",
+                (
+                    "Tu es l'agent redacteur LLM. Redige un rapport Markdown professionnel en francais "
+                    "pour une veille sur les frameworks IA. Structure obligatoire: titre, date, resume executif, "
+                    "priorites, analyse detaillee, contexte interne RAG, risques, recommandations, controle anti-hallucination. "
+                    "Chaque fait externe doit garder son URL source. Les recommandations doivent etre distinctes des faits."
+                ),
+                {
+                    "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "analyses": analyses,
+                    "top_frameworks": top_framework_summaries(analyses, limit=5),
+                },
+                output="markdown",
+            )
+            if not report.startswith("#"):
+                report = "# Rapport de veille - Frameworks IA\n\n" + report
+            log("agent_redacteur", "Rapport redige par LLM", {"items": len(analyses), "chars": len(report)})
+            return save_report(report, len(analyses))
+        except Exception as exc:
+            log_llm_fallback("agent_redacteur", exc)
+    report = deterministic_generate_report(analyses)
+    log("agent_redacteur", "Rapport redige par fallback deterministe", {"items": len(analyses), "chars": len(report)})
+    return save_report(report, len(analyses))
+
+
+def deterministic_evaluate_outputs(analyses: list[dict]) -> dict:
     missing_sources = [a.get("title") for a in analyses if not a.get("url")]
     missing_context = [a.get("title") for a in analyses if not a.get("internal_context")]
-    result = {
+    return {
         "items_evalues": len(analyses),
         "missing_sources": missing_sources,
         "missing_internal_context": missing_context,
         "human_validation": get_human_validation(),
         "status": "OK" if not missing_sources else "A_CORRIGER",
     }
-    log("agent_evaluateur", "Evaluation terminee", result)
+
+
+def normalize_evaluation_result(result: dict, baseline: dict) -> dict:
+    result = {**baseline, **result, "human_validation": get_human_validation()}
+    result["items_evalues"] = baseline["items_evalues"]
+    if not isinstance(result.get("missing_sources"), list):
+        result["missing_sources"] = baseline["missing_sources"]
+    if not isinstance(result.get("missing_internal_context"), list):
+        result["missing_internal_context"] = baseline["missing_internal_context"]
+    if result.get("status") not in {"OK", "A_CORRIGER"}:
+        result["status"] = baseline["status"]
+    risks = result.get("hallucination_risks", [])
+    if not isinstance(risks, (list, dict)):
+        result["hallucination_risks"] = []
     return result
 
 
-def run_pipeline(use_live: bool = True) -> dict:
+def evaluate_outputs(analyses: list[dict], use_llm: bool = True) -> dict:
+    baseline = deterministic_evaluate_outputs(analyses)
+    if use_llm:
+        try:
+            result = call_llm_agent(
+                "agent_evaluateur",
+                (
+                    "Tu es l'agent evaluateur LLM. Controle les sources, le risque d'hallucination, "
+                    "la presence du contexte interne RAG et la validation humaine. Retourne un objet JSON avec: "
+                    "items_evalues, missing_sources, missing_internal_context, hallucination_risks, human_validation, status. "
+                    "Le status vaut OK si les sources critiques sont presentes, sinon A_CORRIGER."
+                ),
+                {"analyses": analyses, "baseline": baseline, "human_validation": get_human_validation()},
+            )
+            if not isinstance(result, dict):
+                raise ValueError("L'agent evaluateur LLM n'a pas retourne un objet JSON.")
+            result = normalize_evaluation_result(result, baseline)
+            log("agent_evaluateur", "Evaluation LLM terminee", result)
+            return result
+        except Exception as exc:
+            log_llm_fallback("agent_evaluateur", exc)
+    log("agent_evaluateur", "Evaluation fallback deterministe terminee", baseline)
+    return baseline
+
+
+def graph_prepare_rag(state: PipelineState) -> PipelineState:
+    chunks = build_chunks()
+    vector_index = build_vector_index(chunks)
+    return {"chunks": chunks, "vector_index": vector_index}
+
+
+def graph_collect(state: PipelineState) -> PipelineState:
+    collected = collect_market_items(use_live=state.get("use_live", True), use_llm=state.get("use_llm", True))
+    return {"collected": collected}
+
+
+def graph_filter(state: PipelineState) -> PipelineState:
+    filtered = filter_items(state.get("collected", []), use_llm=state.get("use_llm", True))
+    return {"filtered": filtered}
+
+
+def graph_analyze(state: PipelineState) -> PipelineState:
+    analyses = analyze_items(state.get("filtered", []), state.get("chunks", []), use_llm=state.get("use_llm", True))
+    return {"analyses": analyses}
+
+
+def graph_write_report(state: PipelineState) -> PipelineState:
+    report = generate_report(state.get("analyses", []), use_llm=state.get("use_llm", True))
+    return {"report": report}
+
+
+def graph_export(state: PipelineState) -> PipelineState:
+    export_path = export_recommendations_csv(state.get("analyses", []))
+    return {"export_path": str(export_path)}
+
+
+def graph_evaluate(state: PipelineState) -> PipelineState:
+    evaluation = evaluate_outputs(state.get("analyses", []), use_llm=state.get("use_llm", True))
+    return {"evaluation": evaluation}
+
+
+def build_langgraph_pipeline():
+    if StateGraph is None or START is None or END is None:
+        raise RuntimeError("langgraph n'est pas installe.")
+    graph = StateGraph(PipelineState)
+    graph.add_node("rag_prepare", graph_prepare_rag)
+    graph.add_node("agent_collecteur_llm", graph_collect)
+    graph.add_node("agent_filtreur_llm", graph_filter)
+    graph.add_node("agent_analyste_llm", graph_analyze)
+    graph.add_node("agent_redacteur_llm", graph_write_report)
+    graph.add_node("export_csv", graph_export)
+    graph.add_node("agent_evaluateur_llm", graph_evaluate)
+
+    graph.add_edge(START, "rag_prepare")
+    graph.add_edge("rag_prepare", "agent_collecteur_llm")
+    graph.add_edge("agent_collecteur_llm", "agent_filtreur_llm")
+    graph.add_edge("agent_filtreur_llm", "agent_analyste_llm")
+    graph.add_edge("agent_analyste_llm", "agent_redacteur_llm")
+    graph.add_edge("agent_redacteur_llm", "export_csv")
+    graph.add_edge("export_csv", "agent_evaluateur_llm")
+    graph.add_edge("agent_evaluateur_llm", END)
+    return graph.compile()
+
+
+def export_langgraph_visual() -> dict:
+    ensure_dirs()
+    app = build_langgraph_pipeline()
+    graph = app.get_graph()
+    mermaid_path = EXPORT_DIR / "orchestration_langgraph.mmd"
+    png_path = EXPORT_DIR / "orchestration_langgraph.png"
+    mermaid = graph.draw_mermaid()
+    mermaid_path.write_text(mermaid, encoding="utf-8")
+    result = {
+        "mermaid_path": str(mermaid_path),
+        "png_path": str(png_path),
+        "png_exists": png_path.exists(),
+        "mermaid": mermaid,
+    }
+    try:
+        graph.draw_mermaid_png(output_file_path=str(png_path), background_color="white", padding=16)
+        result["png_exists"] = png_path.exists()
+        log("orchestrateur_langgraph", "Image du graphe LangGraph generee", {"path": str(png_path)})
+    except Exception as exc:
+        result["error"] = str(exc)
+        log("orchestrateur_langgraph", "Generation image LangGraph indisponible", {"error": str(exc)})
+    return result
+
+
+def run_pipeline_sequential(use_live: bool = True, use_llm: bool = True) -> PipelineState:
     ensure_dirs()
     chunks = build_chunks()
     vector_index = build_vector_index(chunks)
-    collected = collect_market_items(use_live=use_live)
-    filtered = filter_items(collected)
-    analyses = analyze_items(filtered, chunks)
-    report = generate_report(analyses)
+    collected = collect_market_items(use_live=use_live, use_llm=use_llm)
+    filtered = filter_items(collected, use_llm=use_llm)
+    analyses = analyze_items(filtered, chunks, use_llm=use_llm)
+    report = generate_report(analyses, use_llm=use_llm)
     export_path = export_recommendations_csv(analyses)
-    evaluation = evaluate_outputs(analyses)
+    evaluation = evaluate_outputs(analyses, use_llm=use_llm)
     return {
-        "chunks": len(chunks),
+        "use_live": use_live,
+        "use_llm": use_llm,
+        "chunks": chunks,
         "vector_index": vector_index,
-        "collected": len(collected),
-        "filtered": len(filtered),
-        "analyses": len(analyses),
-        "report_chars": len(report),
-        "export_csv": str(export_path),
+        "collected": collected,
+        "filtered": filtered,
+        "analyses": analyses,
+        "report": report,
+        "export_path": str(export_path),
         "evaluation": evaluation,
     }
+
+
+def pipeline_result_from_state(state: PipelineState, orchestrator: str) -> dict:
+    report = state.get("report", "")
+    return {
+        "orchestrator": orchestrator,
+        "llm_requested": state.get("use_llm", True),
+        "llm_configured": llm_configured(),
+        "chunks": len(state.get("chunks", [])),
+        "vector_index": state.get("vector_index", False),
+        "collected": len(state.get("collected", [])),
+        "filtered": len(state.get("filtered", [])),
+        "analyses": len(state.get("analyses", [])),
+        "report_chars": len(report),
+        "export_csv": state.get("export_path", ""),
+        "evaluation": state.get("evaluation", {}),
+    }
+
+
+def run_pipeline(use_live: bool = True, use_llm: bool = True) -> dict:
+    ensure_dirs()
+    initial_state: PipelineState = {"use_live": use_live, "use_llm": use_llm}
+    try:
+        app = build_langgraph_pipeline()
+        final_state = app.invoke(initial_state)
+        log(
+            "orchestrateur_langgraph",
+            "Pipeline LangGraph executee",
+            {
+                "use_live": use_live,
+                "use_llm": use_llm,
+                "nodes": [
+                    "rag_prepare",
+                    "agent_collecteur_llm",
+                    "agent_filtreur_llm",
+                    "agent_analyste_llm",
+                    "agent_redacteur_llm",
+                    "export_csv",
+                    "agent_evaluateur_llm",
+                ],
+            },
+        )
+        return pipeline_result_from_state(final_state, orchestrator="langgraph")
+    except Exception as exc:
+        log("orchestrateur_langgraph", "Fallback orchestration Python apres erreur LangGraph", {"error": str(exc)})
+        final_state = run_pipeline_sequential(use_live=use_live, use_llm=use_llm)
+        return pipeline_result_from_state(final_state, orchestrator="python_fallback")

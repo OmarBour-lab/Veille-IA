@@ -34,14 +34,13 @@ Si ChromaDB est indisponible, le systeme bascule vers une recherche lexicale :
 
 ## 6. Generation augmentee
 
-L'agent analyste utilise les passages retrouves pour produire :
+L'agent analyste LLM utilise les passages retrouves pour produire :
 
 - un score d'impact ;
 - une priorite ;
-- une recommandation ;
+- une recommandation generee par LLM ;
 - une justification interne.
 
 ## 7. Controle qualite
 
-Chaque analyse passe par un validateur de schema simple. Si un champ obligatoire manque, le systeme le corrige avec une valeur par defaut et journalise l'action dans les logs de l'agent evaluateur.
-
+Les analyses passent par un validateur de schema simple. Si un champ obligatoire manque, le systeme le corrige avec une valeur par defaut et journalise l'action dans les logs de l'agent evaluateur. Lorsque l'agent analyste LLM est disponible, l'analyse est traitee en batch pour reduire les appels API et limiter la latence.

@@ -69,7 +69,7 @@
         "url": "http://host.docker.internal:8000/pipeline/run",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "{ \"use_live\": true }"
+        "jsonBody": "{ \"use_live\": true, \"use_llm\": true }"
       },
       "id": "run-pipeline",
       "name": "Executer pipeline agentique",
@@ -185,6 +185,6 @@
   },
   "versionId": "prototype-agentique-mcp",
   "meta": {
-    "description": "Workflow n8n avec orchestration, notes AI Agents, validation humaine, fallback et export Google Sheets."
+    "description": "Workflow n8n qui declenche la pipeline LangGraph, recupere le rapport, gere la validation humaine, le fallback et l'export Google Sheets."
   }
 }

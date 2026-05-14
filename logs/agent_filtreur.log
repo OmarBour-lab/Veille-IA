@@ -2,3 +2,24 @@
 {"timestamp": "2026-05-11T13:33:45+00:00", "agent": "agent_filtreur", "message": "Filtrage termine", "payload": {"input": 5, "output": 4}}
 {"timestamp": "2026-05-11T13:55:12+00:00", "agent": "agent_filtreur", "message": "Filtrage termine", "payload": {"input": 13, "output": 12}}
 {"timestamp": "2026-05-12T08:19:04+00:00", "agent": "agent_filtreur", "message": "Filtrage termine", "payload": {"input": 13, "output": 12}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_filtreur", "message": "Filtrage termine", "payload": {"input": 13, "output": 12}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_filtreur", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "langchain-openai n'est pas installe.", "llm_configured": false}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_filtreur", "message": "Filtrage deterministe termine", "payload": {"input": 5, "output": 4}}
+{"timestamp": "2026-05-14T09:03:46+00:00", "agent": "agent_filtreur", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Connection error.", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:03:46+00:00", "agent": "agent_filtreur", "message": "Filtrage deterministe termine", "payload": {"input": 5, "output": 4}}
+{"timestamp": "2026-05-14T09:04:53+00:00", "agent": "agent_filtreur", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:04:53+00:00", "agent": "agent_filtreur", "message": "Filtrage LLM termine", "payload": {"input": 0, "output": 0}}
+{"timestamp": "2026-05-14T09:06:37+00:00", "agent": "agent_filtreur", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:37+00:00", "agent": "agent_filtreur", "message": "Sortie LLM vide corrigee par filtrage local", "payload": {"output": 12}}
+{"timestamp": "2026-05-14T09:06:37+00:00", "agent": "agent_filtreur", "message": "Filtrage LLM termine", "payload": {"input": 13, "output": 12}}
+{"timestamp": "2026-05-14T09:10:49+00:00", "agent": "agent_filtreur", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:10:49+00:00", "agent": "agent_filtreur", "message": "Sortie LLM vide corrigee par filtrage local", "payload": {"output": 12}}
+{"timestamp": "2026-05-14T09:10:49+00:00", "agent": "agent_filtreur", "message": "Filtrage LLM termine", "payload": {"input": 13, "output": 12}}
+{"timestamp": "2026-05-14T09:17:08+00:00", "agent": "agent_filtreur", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:08+00:00", "agent": "agent_filtreur", "message": "Filtrage LLM termine", "payload": {"input": 13, "output": 13}}
+{"timestamp": "2026-05-14T09:22:30+00:00", "agent": "agent_filtreur", "message": "Filtrage deterministe termine", "payload": {"input": 5, "output": 4}}
+{"timestamp": "2026-05-14T09:24:18+00:00", "agent": "agent_filtreur", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:24:18+00:00", "agent": "agent_filtreur", "message": "Filtrage deterministe termine", "payload": {"input": 13, "output": 12}}
+{"timestamp": "2026-05-14T09:28:58+00:00", "agent": "agent_filtreur", "message": "Filtrage deterministe termine", "payload": {"input": 5, "output": 4}}
+{"timestamp": "2026-05-14T09:29:31+00:00", "agent": "agent_filtreur", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:29:31+00:00", "agent": "agent_filtreur", "message": "Filtrage deterministe termine", "payload": {"input": 13, "output": 12}}

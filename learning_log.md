@@ -6,7 +6,7 @@
 - Membres : Omar BOUREZGUI, Wassim RHAZZAL
 - Cours : Agent IA et Prompt Ingenierie
 - Periode : mai 2026
-- Version du prototype : multi-agents Python, RAG ChromaDB, n8n, MCP, Streamlit
+- Version du prototype : agents LLM GitHub Models, RAG ChromaDB, n8n, MCP, Streamlit
 
 ## Entree 1 - Cadrage du sujet
 
@@ -151,20 +151,20 @@ Difficultes rencontrees :
 
 - Certaines APIs externes peuvent etre bloquees par le reseau.
 - Les composants Streamlit ont necessite des ajustements CSS pour garder un bon contraste.
-- Le respect strict des consignes n8n Advanced AI depend de l'environnement n8n disponible.
+- L'utilisation de noeuds Advanced AI natifs dans n8n depend de l'environnement n8n disponible ; l'orchestration interne retenue est LangGraph.
 
 Decisions prises :
 
 - Garder un fallback local pour garantir la demonstration.
 - Utiliser ChromaDB avec embeddings locaux pour eviter les couts et les cles API.
-- Presenter l'architecture comme hybride : n8n orchestre, Python execute les agents, MCP expose les outils.
+- Presenter l'architecture comme hybride : n8n declenche le workflow, LangGraph orchestre les agents LLM, MCP expose les outils.
 
 ## Entree 11 - Limites restantes
 
 Limites :
 
 - La base interne reste simulee.
-- Les noeuds Advanced AI n8n ne sont pas encore remplaces par de vrais agents n8n si l'environnement ne les fournit pas.
+- Les noeuds Advanced AI natifs n8n restent optionnels ; le coeur multi-agent est deja orchestre par LangGraph.
 - L'export Google Sheets est fourni sous forme CSV, pas encore connecte a un compte Google.
 - Les embeddings locaux sont suffisants pour la demonstration, mais moins performants que des embeddings specialises.
 
@@ -191,3 +191,38 @@ Travail realise :
 Apprentissage :
 
 La documentation doit suivre l'evolution du code. Quand on ajoute n8n, MCP, Streamlit ou ChromaDB, il faut mettre a jour le rapport, le learning log et les schemas pour eviter de presenter une architecture differente de celle qui tourne vraiment.
+
+## Entree 13 - Passage aux agents LLM
+
+Objectif : remplacer les agents logiques deterministes par des agents LLM appeles via GitHub Models.
+
+Travail realise :
+
+- Ajout de `langchain-openai` pour appeler GitHub Models avec une API compatible OpenAI.
+- Ajout de la configuration `GITHUB_MODELS_TOKEN`, `GITHUB_API_KEY`, `GITHUB_MODELS_MODEL` et `GITHUB_MODELS_BASE_URL`.
+- Transformation du collecteur, filtreur, analyste, redacteur et evaluateur en agents LLM par defaut.
+- Conservation du RAG avec ChromaDB pour fournir le contexte interne aux agents LLM.
+- Garantie que le texte de recommandation est produit par l'agent analyste LLM et trace avec `recommendation_source="llm"`.
+- Mise a jour de FastAPI, MCP, n8n et Streamlit pour lancer la pipeline avec `use_llm=true`.
+- Conservation d'un fallback deterministe uniquement si l'appel LLM ou une API externe echoue.
+
+Apprentissage :
+
+Un agent LLM doit avoir un role clair, un schema de sortie controle et des logs. Le fallback reste necessaire, mais il ne doit pas remplacer le chemin principal : il sert a rendre la demonstration robuste quand l'API ou le reseau est indisponible.
+
+## Entree 14 - Orchestration LangGraph
+
+Objectif : remplacer l'orchestration lineaire manuelle par un graphe multi-agent explicite.
+
+Travail realise :
+
+- Ajout de `langgraph` aux dependances.
+- Creation d'un `PipelineState` partage par les noeuds du graphe.
+- Transformation de la pipeline en noeuds LangGraph : preparation RAG, collecteur LLM, filtreur LLM, analyste LLM, redacteur LLM, export CSV et evaluateur LLM.
+- Optimisation de l'agent analyste LLM en mode batch pour eviter un appel API par item et accelerer la demonstration.
+- Conservation d'un fallback d'orchestration Python si LangGraph est indisponible.
+- Ajout du champ `orchestrator` dans le resultat de pipeline pour prouver que l'execution passe par LangGraph.
+
+Apprentissage :
+
+LangGraph rend l'orchestration plus explicite : les agents ne sont plus seulement appeles dans une fonction lineaire, ils sont organises comme un graphe d'etats. C'est plus lisible pour expliquer la coordination dans un systeme multi-agent.

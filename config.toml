@@ -33,6 +33,28 @@ arxiv_enabled = false
 manual_fallback_enabled = true
 max_items_per_source = 20
 
+[llm]
+enabled = true
+provider = "github_models"
+model = "openai/gpt-4o"
+base_url = "https://models.github.ai/inference"
+api_key_env = "GITHUB_MODELS_TOKEN, GITHUB_API_KEY ou GITHUB_TOKEN"
+fallback_on_error = true
+
+[orchestration]
+engine = "langgraph"
+fallback_engine = "python_sequential"
+state = "PipelineState"
+nodes = [
+  "rag_prepare",
+  "agent_collecteur_llm",
+  "agent_filtreur_llm",
+  "agent_analyste_llm",
+  "agent_redacteur_llm",
+  "export_csv",
+  "agent_evaluateur_llm"
+]
+
 [rag]
 chunk_size_words = 120
 chunk_overlap_words = 25
@@ -68,8 +90,9 @@ output = "logs/agent_evaluateur.log"
 [fallback]
 use_cached_data = true
 use_manual_dataset = true
-llm_required = false
-on_api_failure = "continuer avec synthese extractive et logs d'erreur"
+llm_required = true
+deterministic_on_llm_failure = true
+on_api_failure = "journaliser l'erreur puis continuer avec fallback local ou deterministe"
 
 [anti_hallucination]
 require_source_url = true
@@ -91,6 +114,7 @@ role = "exposer les outils de veille a des clients agents compatibles MCP"
 tools = [
   "run_market_watch",
   "get_pipeline_status",
+  "get_llm_status",
   "list_generated_reports",
   "get_latest_report",
   "get_agent_logs",

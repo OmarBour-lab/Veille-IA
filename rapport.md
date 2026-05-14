@@ -11,27 +11,29 @@ Le systeme propose automatise cette veille. Il collecte des signaux externes, le
 - Surveiller les tendances autour de LangChain, LlamaIndex, LangGraph, CrewAI, AutoGen, Haystack, DSPy et Smolagents.
 - Contextualiser les nouveautes avec la base interne de l'entreprise.
 - Produire un rapport de synthese avec recommandations.
-- Visualiser les resultats dans un dashboard web minimaliste.
+- Visualiser les resultats dans un dashboard web de supervision.
 - Integrer n8n comme orchestrateur externe.
 - Exposer les outils du systeme via le standard MCP.
-- Fournir des logs prouvant le passage de chaque agent.
+- Fournir des logs prouvant le passage de chaque agent LLM.
 - Integrer des strategies de fallback, de controle anti-hallucination et de gestion de contexte.
 
 ## 3. Engineering workflow
 
 Le flux global est detaille dans `docs/logigramme_flux_donnees.md`.
 
+L'orchestration interne des agents est realisee avec LangGraph. Chaque agent LLM est represente par un noeud du graphe, et les donnees circulent dans un etat partage.
+
 ```mermaid
 flowchart TD
-    A["Sources externes: GitHub/API/fallback"] --> B["Agent collecteur"]
-    B --> C["Agent filtreur: nettoyage et deduplication"]
+    A["Sources externes: GitHub/API/fallback"] --> B["Agent collecteur LLM"]
+    B --> C["Agent filtreur LLM: nettoyage et deduplication"]
     C --> D["Agent RAG"]
     E["Base interne simulee"] --> F["Chunking"]
     F --> D
-    D --> G["Agent analyste"]
-    G --> H["Agent redacteur"]
+    D --> G["Agent analyste LLM"]
+    G --> H["Agent redacteur LLM"]
     H --> I["Rapport de synthese"]
-    G --> J["Agent evaluateur"]
+    G --> J["Agent evaluateur LLM"]
     H --> J
     J --> K["Logs et controles"]
 ```
@@ -50,19 +52,21 @@ La pipeline RAG utilise une base vectorielle ChromaDB persistante avec fallback 
 
 Dans une version production, les embeddings locaux peuvent etre remplaces par des embeddings OpenAI ou HuggingFace.
 
-## 5. Agents
+## 5. Agents LLM
 
-L'agent collecteur recupere les signaux de marche. Il tente une collecte GitHub si l'acces reseau fonctionne, puis utilise automatiquement un jeu de donnees local si une API echoue.
+Les agents principaux sont maintenant des agents LLM appeles via GitHub Models avec `langchain-openai`. Les traitements deterministes restent disponibles uniquement comme fallback si l'appel LLM ou une source externe echoue.
 
-L'agent filtreur elimine les doublons et conserve les items correspondant aux mots-cles de veille : agent, RAG, release, orchestration, benchmark, evaluation.
+L'agent collecteur LLM normalise les signaux de marche issus de GitHub et du jeu local de secours, sans inventer d'URL ou de metriques.
+
+L'agent filtreur LLM elimine les doublons, juge la pertinence et conserve les items correspondant aux mots-cles de veille : agent, RAG, release, orchestration, benchmark, evaluation.
 
 L'agent RAG retrouve les passages internes pertinents pour chaque item externe.
 
-L'agent analyste calcule un score d'impact selon trois dimensions : fiabilite de la source, signal marche et proximite avec le contexte interne.
+L'agent analyste LLM calcule un score d'impact selon trois dimensions : fiabilite de la source, signal marche et proximite avec le contexte interne. Il genere aussi le texte de recommandation final, marque dans les donnees par `recommendation_source="llm"`.
 
-L'agent redacteur genere un rapport Markdown avec resume executif, analyse detaillee, sources et recommandations.
+L'agent redacteur LLM genere un rapport Markdown avec resume executif, analyse detaillee, sources et recommandations.
 
-L'agent evaluateur verifie que les items disposent d'une source, que les logs existent et que les recommandations sont separees des faits.
+L'agent evaluateur LLM verifie que les items disposent d'une source, que les logs existent, que les recommandations sont separees des faits et que la validation humaine est presente.
 
 ## 5.1 Dashboard web
 
@@ -97,6 +101,7 @@ La deuxieme couche est MCP, Model Context Protocol. Le serveur `source/mcp_serve
 
 - `run_market_watch`
 - `get_pipeline_status`
+- `get_llm_status`
 - `list_generated_reports`
 - `get_latest_report`
 - `get_agent_logs`
@@ -106,13 +111,13 @@ Cette separation donne une architecture plus propre :
 
 - n8n gere l'orchestration externe et la planification ;
 - MCP gere l'interoperabilite avec des agents IA externes ;
-- la pipeline Python conserve le raisonnement metier et les logs agents ;
+- LangGraph orchestre les agents LLM internes et conserve les logs agents ;
 - Streamlit fournit la validation Human-in-the-Loop.
 
 ```mermaid
 flowchart TD
     A["n8n"] --> B["API FastAPI"]
-    B --> C["Pipeline agentique"]
+    B --> C["Graphe LangGraph"]
     D["Client MCP"] --> E["Serveur MCP"]
     E --> C
     C --> F["Rapports + logs"]
@@ -142,7 +147,7 @@ Chaque ligne de log est au format JSON avec horodatage, nom d'agent, message et 
 
 ## 8. Fallback et robustesse
 
-Le systeme n'exige pas de LLM pour fonctionner. Si une API echoue, il continue avec `manual_seed.json`. Si GitHub est inaccessible, l'erreur est journalisee et la pipeline continue. Cette strategie garantit une demonstration stable.
+Le systeme utilise les agents LLM comme chemin principal. Si GitHub Models, GitHub API ou ChromaDB sont indisponibles, l'erreur est journalisee et la pipeline active un fallback local ou deterministe. Cette strategie garantit une demonstration stable sans masquer les erreurs.
 
 ## 9. Lutte contre l'hallucination
 
@@ -163,8 +168,10 @@ Le systeme n'exige pas de LLM pour fonctionner. Si une API echoue, il continue a
 - Requests : collecte via GitHub API.
 - python-dotenv : chargement securise des cles API depuis `.env`.
 - LangChain Text Splitters : chunking des documents internes.
+- LangChain OpenAI : connexion compatible OpenAI vers GitHub Models.
+- LangGraph : orchestration des agents LLM sous forme de graphe d'etats.
 - ChromaDB : base vectorielle persistante.
-- Streamlit : dashboard web minimaliste.
+- Streamlit : dashboard web de supervision.
 - FastAPI et Uvicorn : API HTTP locale pour n8n.
 - MCP Python SDK : serveur MCP pour interoperabilite agentique.
 - TOML : configuration.

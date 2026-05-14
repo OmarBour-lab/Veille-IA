@@ -4,10 +4,12 @@
 
 Le systeme applique plusieurs niveaux de fallback :
 
-1. Si GitHub API repond, les donnees live sont ajoutees.
-2. Si GitHub API echoue, l'erreur est loggee.
-3. Le fichier `manual_seed.json` garantit une base de demonstration.
-4. La generation du rapport continue sans blocage.
+1. Si GitHub Models repond, les agents LLM traitent collecte, filtrage, analyse, redaction et evaluation.
+2. Si un appel LLM echoue, l'erreur est loggee et le fallback deterministe correspondant est active.
+3. Si GitHub API repond, les donnees live sont ajoutees.
+4. Si GitHub API echoue, l'erreur est loggee.
+5. Le fichier `manual_seed.json` garantit une base de demonstration.
+6. La generation du rapport continue sans blocage.
 
 ## Anti-hallucination
 
@@ -21,7 +23,7 @@ Le systeme applique plusieurs niveaux de fallback :
 
 - Chunking des documents internes.
 - Selection `top_k` des passages pertinents.
-- Analyse item par item.
+- Analyse des items en batch lorsque l'agent analyste LLM est disponible, avec fallback item par item en cas d'erreur.
 - Rapport final synthetique.
 - Logs courts au format JSON.
 
@@ -29,6 +31,5 @@ Le systeme applique plusieurs niveaux de fallback :
 
 - Les cles API sont dans `.env`.
 - `.env` est ignore par Git.
-- Les donnees internes ne sont pas envoyees a une API externe dans la version actuelle.
-- Le prototype peut fonctionner sans LLM.
-
+- Seuls les chunks internes top-k utiles sont envoyes a GitHub Models pendant l'analyse LLM ; les cles et fichiers `.env` ne sont jamais envoyes.
+- Le chemin principal utilise les agents LLM, mais le prototype conserve un fallback deterministe pour les demonstrations sans reseau ou sans quota.

@@ -30,3 +30,150 @@
 {"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Haystack", "priority": "haute", "score": 5}}
 {"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "DSPy", "priority": "haute", "score": 5}}
 {"timestamp": "2026-05-12T08:19:05+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Smolagents", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LangChain", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "LangGraph", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "CrewAI", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "AutoGen", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Haystack", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "DSPy", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T07:53:03+00:00", "agent": "agent_analyste", "message": "Item analyse", "payload": {"framework": "Smolagents", "priority": "haute", "score": 5}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "langchain-openai n'est pas installe.", "llm_configured": false}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "langchain-openai n'est pas installe.", "llm_configured": false}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "langchain-openai n'est pas installe.", "llm_configured": false}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "langchain-openai n'est pas installe.", "llm_configured": false}}
+{"timestamp": "2026-05-14T09:01:56+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-14T09:03:47+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Connection error.", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:03:47+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-14T09:03:48+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Connection error.", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:03:48+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-14T09:03:50+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Connection error.", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:03:50+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-14T09:03:51+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Connection error.", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:03:51+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-14T09:06:40+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:40+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangChain", "priority": "moyenne", "score": 3.5}}
+{"timestamp": "2026-05-14T09:06:43+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:43+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:06:47+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:47+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:06:49+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:49+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:06:52+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:52+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:06:55+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:55+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:06:59+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:06:59+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangGraph", "priority": "moyenne", "score": 4.0}}
+{"timestamp": "2026-05-14T09:07:01+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:07:02+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:07:22+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:07:22+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "AutoGen", "priority": "moyenne", "score": 4.0}}
+{"timestamp": "2026-05-14T09:07:26+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:07:26+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:07:34+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:07:34+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "DSPy", "priority": "moyenne", "score": 4.0}}
+{"timestamp": "2026-05-14T09:07:38+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:07:38+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Smolagents", "priority": "moyenne", "score": 3.0}}
+{"timestamp": "2026-05-14T09:10:52+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:10:52+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangChain", "priority": "moyenne", "score": 3.0}}
+{"timestamp": "2026-05-14T09:10:56+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:10:56+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:10:59+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:10:59+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:11:02+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:02+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:11:06+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:06+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:11:09+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:09+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:11:13+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:13+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangGraph", "priority": "moyenne", "score": 4.0}}
+{"timestamp": "2026-05-14T09:11:16+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:16+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:11:33+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:33+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "AutoGen", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:11:37+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:37+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:11:43+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:43+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "DSPy", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:11:46+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:11:46+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Smolagents", "priority": "moyenne", "score": 4.0}}
+{"timestamp": "2026-05-14T09:17:12+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:12+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:17:16+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:16+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:17:20+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:20+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:17:23+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:23+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:17:28+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:28+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "DSPy", "priority": "haute", "score": 4.0}}
+{"timestamp": "2026-05-14T09:17:32+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:32+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:17:35+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:35+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:17:38+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:38+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "LangGraph", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:17:54+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:54+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:17:57+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:17:57+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "AutoGen", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:18:00+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:18:00+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:18:04+00:00", "agent": "agent_analyste", "message": "Appel LLM reussi", "payload": {"model": "openai/gpt-4o", "output": "json"}}
+{"timestamp": "2026-05-14T09:18:04+00:00", "agent": "agent_analyste", "message": "Item analyse par LLM", "payload": {"framework": "DSPy", "priority": "haute", "score": 4.5}}
+{"timestamp": "2026-05-14T09:18:06+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:18:06+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Smolagents", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:22:30+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-14T09:22:30+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-14T09:22:30+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-14T09:22:30+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-14T09:24:20+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:24:20+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-14T09:25:14+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:25:14+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-14T09:25:16+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:25:16+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-14T09:25:19+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:25:19+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-14T09:25:21+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:25:21+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:26:16+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:26:16+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:26:19+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:26:19+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangGraph", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:26:22+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:26:22+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:26:24+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:26:24+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "AutoGen", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:27:16+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:27:16+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:27:18+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:27:18+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "DSPy", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:27:20+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:27:20+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Smolagents", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:28:58+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-14T09:28:58+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-14T09:28:58+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-14T09:28:58+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Fallback deterministe active apres erreur LLM", "payload": {"error": "Too many requests. For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).", "llm_configured": true}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 4.58}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 4.56}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 4.53}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 4.52}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangChain", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LlamaIndex", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "LangGraph", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "CrewAI", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "AutoGen", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Haystack", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "DSPy", "priority": "haute", "score": 5.0}}
+{"timestamp": "2026-05-14T09:29:33+00:00", "agent": "agent_analyste", "message": "Item analyse par fallback deterministe", "payload": {"framework": "Smolagents", "priority": "haute", "score": 5.0}}

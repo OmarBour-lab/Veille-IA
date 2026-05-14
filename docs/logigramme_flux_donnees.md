@@ -2,12 +2,13 @@
 
 ```mermaid
 flowchart TD
-    A["Declenchement manuel ou planifie"] --> B["Agent collecteur"]
+    A["Declenchement manuel, n8n ou MCP"] --> LG["Graphe LangGraph"]
+    LG --> B["Agent collecteur LLM"]
     B --> C["Sources externes: GitHub/API"]
     B --> D["Fallback local: manual_seed.json"]
     C --> E["Items collectes"]
     D --> E
-    E --> F["Agent filtreur"]
+    E --> F["Agent filtreur LLM"]
     F --> G["Items dedupliques et classes"]
     H["Base interne simulee"] --> I["Chunking avec overlap"]
     I --> J["Index vectoriel ChromaDB"]
@@ -16,12 +17,12 @@ flowchart TD
     J --> K
     S --> K
     K --> L["Contexte interne pertinent"]
-    L --> M["Agent analyste"]
+    L --> M["Agent analyste LLM"]
     G --> M
     M --> N["Scores, priorites, recommandations"]
-    N --> O["Agent redacteur"]
+    N --> O["Agent redacteur LLM"]
     O --> P["Rapport Markdown"]
-    N --> Q["Agent evaluateur"]
+    N --> Q["Agent evaluateur LLM"]
     P --> Q
     Q --> R["Logs et controle anti-hallucination"]
 ```

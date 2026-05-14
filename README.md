@@ -10,7 +10,7 @@ Le prototype couvre les frameworks suivants : LangChain, LlamaIndex, LangGraph, 
 
 ## Architecture en bref
 
-- Pipeline multi-agents en Python : collecte, filtrage, RAG, analyse, redaction et evaluation.
+- Pipeline multi-agents LLM orchestree avec LangGraph : collecte, filtrage, RAG, analyse, redaction et evaluation.
 - RAG avec chunking LangChain, base vectorielle ChromaDB et fallback lexical.
 - Dashboard Streamlit pour piloter la pipeline, consulter les rapports, lire les logs et effectuer une validation humaine.
 - API FastAPI pour integrer le projet dans un workflow n8n.
@@ -50,7 +50,9 @@ Installer les dependances :
 uv pip install -r requirements.txt --python .venv\Scripts\python.exe
 ```
 
-Copier `.env.example` vers `.env`, puis renseigner les cles API necessaires. Le prototype peut fonctionner sans appel externe grace au fichier de fallback `data/donnees_collectees/manual_seed.json`.
+Copier `.env.example` vers `.env`, puis renseigner les cles API necessaires. Pour les agents LLM via GitHub Models, definir au moins `GITHUB_API_KEY`, `GITHUB_MODELS_TOKEN` ou `GITHUB_TOKEN`.
+
+Le chemin principal utilise les agents LLM. Le fallback local `data/donnees_collectees/manual_seed.json` et les traitements deterministes servent uniquement de secours si une API externe est indisponible.
 
 ## Execution de la pipeline
 
@@ -87,6 +89,7 @@ http://localhost:8501
 Le dashboard permet de :
 
 - relancer la pipeline avec ou sans collecte GitHub live ;
+- activer ou desactiver les agents LLM GitHub Models ;
 - consulter les indicateurs de collecte, filtrage, analyse et generation ;
 - visualiser les priorites de veille et les scores par framework ;
 - lire le dernier rapport et les rapports horodates ;
@@ -114,7 +117,7 @@ Importer ensuite le workflow suivant dans n8n :
 n8n/workflow_veille_frameworks_ia.json
 ```
 
-Le workflow contient un declenchement manuel, une planification hebdomadaire, un appel `POST /pipeline/run`, la recuperation du dernier rapport, une preparation d'export Google Sheets, une validation humaine et une branche fallback/correction.
+Le workflow contient un declenchement manuel, une planification hebdomadaire, un appel `POST /pipeline/run` avec `use_llm=true`, la recuperation du dernier rapport, une preparation d'export Google Sheets, une validation humaine et une branche fallback/correction.
 
 Si n8n tourne dans Docker, garder `http://host.docker.internal:8000`. Si n8n tourne directement sur Windows, remplacer par `http://127.0.0.1:8000`.
 
@@ -136,6 +139,7 @@ Le serveur expose des outils standardises :
 
 - `run_market_watch`
 - `get_pipeline_status`
+- `get_llm_status`
 - `list_generated_reports`
 - `get_latest_report`
 - `get_agent_logs`
@@ -143,14 +147,16 @@ Le serveur expose des outils standardises :
 
 Un client compatible MCP peut utiliser ces outils sans connaitre les details internes du code Python.
 
-## Architecture agents
+## Architecture agents LLM
 
-- Agent collecteur : collecte les signaux externes depuis GitHub ou le fallback local.
-- Agent filtreur : deduplique et filtre les items pertinents.
-- Agent RAG : interroge la base vectorielle ChromaDB construite a partir de la base interne simulee.
-- Agent analyste : calcule l'impact et formule une recommandation.
-- Agent redacteur : genere le rapport final.
-- Agent evaluateur : controle les sources, les logs et les risques d'hallucination.
+- Agent collecteur LLM : normalise les signaux GitHub et les donnees de veille sans inventer de sources.
+- Agent filtreur LLM : deduplique, juge la pertinence et conserve les tendances utiles.
+- Agent RAG : interroge ChromaDB et fournit le contexte interne aux agents LLM.
+- Agent analyste LLM : croise tendance externe et contexte interne pour produire score, priorite et texte de recommandation.
+- Agent redacteur LLM : genere le rapport Markdown final.
+- Agent evaluateur LLM : controle les sources, les risques d'hallucination, le schema et la validation humaine.
+
+Le texte de recommandation est genere par l'agent analyste LLM et marque par `recommendation_source="llm"` dans les donnees d'analyse. Si un appel GitHub Models echoue, chaque agent journalise l'erreur et active un fallback deterministe pour que la demonstration reste executable.
 
 Les logs produits par ces agents sont disponibles dans `logs/` et servent de preuves d'execution pour le rapport.
 
@@ -167,6 +173,8 @@ Les fichiers `logs/*.log` sont volontairement conserves dans le depot, car ils f
 - `requests` : appels HTTP vers GitHub API.
 - `python-dotenv` : chargement des variables depuis `.env`.
 - `langchain-text-splitters` : decoupage des documents internes en chunks.
+- `langchain-openai` : appels LLM compatibles OpenAI vers GitHub Models.
+- `langgraph` : orchestration interne des agents LLM sous forme de graphe d'etats.
 - `chromadb` : base vectorielle persistante pour le RAG.
 - `jupyter` : execution des notebooks.
 - `streamlit` : dashboard web.
