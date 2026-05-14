@@ -2,7 +2,7 @@
 .env
 .env.*
 *.env
-!.env.example
+.env.example
 
 # Environnements et dependances locales
 .venv/
@@ -45,4 +45,4 @@ data/vector_db/
 !logs/*.log
 Thumbs.db
 .DS_Store
-
+.env.example
