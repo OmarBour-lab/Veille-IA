@@ -23,6 +23,11 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints/
 
+# Presentations generees localement
+presentation_projet_agent_ia.pptx
+*.pptx
+uv.lock
+
 # Streamlit
 .streamlit/secrets.toml
 
@@ -43,6 +48,7 @@ data/vector_db/
 # Caches et logs systeme
 *.log
 !logs/*.log
+logs/streamlit*.log
 Thumbs.db
 .DS_Store
 .env.example

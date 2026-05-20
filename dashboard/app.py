@@ -16,8 +16,10 @@ if str(SOURCE_DIR) not in sys.path:
 from veille_agents import (
     COLLECTED_DIR,
     EXPORT_DIR,
+    LATEST_RUN_PATH,
     LOG_DIR,
     REPORT_DIR,
+    deduplicate_analyses_by_framework,
     get_human_validation,
     llm_configured,
     run_pipeline,
@@ -393,6 +395,20 @@ def load_log(path: Path, limit: int = 20) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def load_latest_watch_state() -> dict:
+    latest_run = load_json(LATEST_RUN_PATH, {})
+    if isinstance(latest_run, dict) and latest_run.get("analyses"):
+        latest_run["analyses"] = deduplicate_analyses_by_framework(latest_run.get("analyses", []))
+        return latest_run
+    return {
+        "generated_at": "",
+        "latest_report": "",
+        "collected": load_json(COLLECTED_DIR / "items_collectes.json", []),
+        "filtered": load_json(COLLECTED_DIR / "items_filtres.json", []),
+        "analyses": deduplicate_analyses_by_framework(load_json(COLLECTED_DIR / "items_analyses.json", [])),
+    }
+
+
 def priority_badge(priority: str) -> str:
     value = str(priority).lower()
     if value == "haute":
@@ -487,9 +503,10 @@ def get_langgraph_visual() -> dict:
     }
 
 
-analyses = load_json(COLLECTED_DIR / "items_analyses.json", [])
-collected = load_json(COLLECTED_DIR / "items_collectes.json", [])
-filtered = load_json(COLLECTED_DIR / "items_filtres.json", [])
+latest_state = load_latest_watch_state()
+analyses = latest_state.get("analyses", [])
+collected = latest_state.get("collected", [])
+filtered = latest_state.get("filtered", [])
 validation = get_human_validation()
 export_path = EXPORT_DIR / "recommendations_google_sheets.csv"
 
@@ -504,6 +521,11 @@ df = pd.DataFrame(analyses)
 if not df.empty:
     df["impact_score"] = pd.to_numeric(df["impact_score"], errors="coerce").fillna(0)
     df["priorite"] = df["priority"].apply(priority_badge)
+    df = (
+        df.sort_values(["recommendation_source", "impact_score"], ascending=[False, False])
+        .drop_duplicates(subset=["framework"], keep="first")
+        .sort_values("impact_score", ascending=False)
+    )
 
 with st.sidebar:
     st.title("Pilotage")
@@ -605,7 +627,9 @@ with tabs[0]:
     else:
         report_actions, report_preview = st.columns([0.35, 0.65])
         with report_actions:
-            selected_report = st.selectbox("Rapport", reports, format_func=lambda p: p.name)
+            latest_report_path = Path(str(latest_state.get("latest_report", "")))
+            default_report_index = reports.index(latest_report_path) if latest_report_path in reports else 0
+            selected_report = st.selectbox("Rapport", reports, index=default_report_index, format_func=lambda p: p.name)
             st.download_button(
                 "Telecharger Markdown",
                 selected_report.read_text(encoding="utf-8"),

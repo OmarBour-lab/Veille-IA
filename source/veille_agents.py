@@ -71,6 +71,7 @@ REPORT_DIR = DATA_DIR / "rapports_generes"
 VECTOR_DIR = DATA_DIR / "vector_db"
 EXPORT_DIR = DATA_DIR / "exports"
 VALIDATION_DIR = DATA_DIR / "validation"
+LATEST_RUN_PATH = COLLECTED_DIR / "latest_run.json"
 
 LLM_MODEL_DEFAULT = "openai/gpt-4o"
 LLM_BASE_URL_DEFAULT = "https://models.github.ai/inference"
@@ -219,6 +220,30 @@ def save_dict_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def normalise_framework_name(value: object) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip()).casefold()
+
+
+def deduplicate_analyses_by_framework(analyses: Iterable[dict]) -> list[dict]:
+    """Keep one current recommendation per framework, preferring LLM output."""
+    selected: dict[str, tuple[tuple[int, float, int], dict]] = {}
+    for position, item in enumerate(analyses):
+        if not isinstance(item, dict):
+            continue
+        key = normalise_framework_name(item.get("framework"))
+        if not key:
+            continue
+        try:
+            score = float(item.get("impact_score", 0) or 0)
+        except (TypeError, ValueError):
+            score = 0.0
+        source = str(item.get("recommendation_source", "")).lower()
+        rank = (1 if source == "llm" else 0, score, position)
+        if key not in selected or rank >= selected[key][0]:
+            selected[key] = (rank, item)
+    return [item for _, item in sorted(selected.values(), key=lambda pair: pair[0], reverse=True)]
 
 
 def tokenize(text: str) -> list[str]:
@@ -724,8 +749,9 @@ def analyze_items(items: list[dict], chunks: list[dict], use_llm: bool = True) -
                 results.append(result)
             if len(results) != len(prepared):
                 raise ValueError("Le nombre d'analyses LLM ne correspond pas au nombre d'items.")
+            results = deduplicate_analyses_by_framework(results)
             save_json(COLLECTED_DIR / "items_analyses.json", results)
-            log("agent_analyste", "Analyse batch LLM terminee", {"items": len(results)})
+            log("agent_analyste", "Analyse batch LLM terminee", {"items": len(results), "deduplication": "framework"})
             return results
         except Exception as exc:
             log_llm_fallback("agent_analyste", exc)
@@ -743,6 +769,7 @@ def analyze_items(items: list[dict], chunks: list[dict], use_llm: bool = True) -
             },
         )
         results.append(baseline)
+    results = deduplicate_analyses_by_framework(results)
     save_json(COLLECTED_DIR / "items_analyses.json", results)
     return results
 
@@ -750,6 +777,7 @@ def analyze_items(items: list[dict], chunks: list[dict], use_llm: bool = True) -
 def export_recommendations_csv(analyses: list[dict]) -> Path:
     ensure_dirs()
     path = EXPORT_DIR / "recommendations_google_sheets.csv"
+    analyses = deduplicate_analyses_by_framework(analyses)
     rows = []
     for item in analyses:
         rows.append(
@@ -836,6 +864,7 @@ def save_report(report: str, analyses_count: int) -> str:
 
 
 def deterministic_generate_report(analyses: list[dict]) -> str:
+    analyses = deduplicate_analyses_by_framework(analyses)
     analyses = sorted(analyses, key=lambda x: x.get("impact_score", 0), reverse=True)
     generated_at = datetime.now()
     lines = [
@@ -889,6 +918,7 @@ def deterministic_generate_report(analyses: list[dict]) -> str:
 
 
 def generate_report(analyses: list[dict], use_llm: bool = True) -> str:
+    analyses = deduplicate_analyses_by_framework(analyses)
     analyses = sorted(analyses, key=lambda x: x.get("impact_score", 0), reverse=True)
     if use_llm:
         try:
@@ -1094,6 +1124,31 @@ def pipeline_result_from_state(state: PipelineState, orchestrator: str) -> dict:
     }
 
 
+def save_latest_run_state(state: PipelineState, orchestrator: str) -> None:
+    reports = sorted(REPORT_DIR.glob("rapport_veille*.md"), key=lambda path: path.stat().st_mtime, reverse=True)
+    latest_report = reports[0] if reports else REPORT_DIR / "rapport_veille.md"
+    analyses = deduplicate_analyses_by_framework(state.get("analyses", []))
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "orchestrator": orchestrator,
+        "use_live": state.get("use_live", True),
+        "use_llm": state.get("use_llm", True),
+        "latest_report": str(latest_report) if latest_report.exists() else "",
+        "collected": state.get("collected", []),
+        "filtered": state.get("filtered", []),
+        "analyses": analyses,
+        "export_path": state.get("export_path", ""),
+        "evaluation": state.get("evaluation", {}),
+    }
+    save_dict_json(LATEST_RUN_PATH, payload)
+    save_json(COLLECTED_DIR / "items_analyses.json", analyses)
+    log(
+        "orchestrateur_langgraph",
+        "Snapshot du dernier run sauvegarde",
+        {"path": str(LATEST_RUN_PATH), "analyses": len(analyses), "orchestrator": orchestrator},
+    )
+
+
 def run_pipeline(use_live: bool = True, use_llm: bool = True) -> dict:
     ensure_dirs()
     initial_state: PipelineState = {"use_live": use_live, "use_llm": use_llm}
@@ -1117,8 +1172,10 @@ def run_pipeline(use_live: bool = True, use_llm: bool = True) -> dict:
                 ],
             },
         )
+        save_latest_run_state(final_state, orchestrator="langgraph")
         return pipeline_result_from_state(final_state, orchestrator="langgraph")
     except Exception as exc:
         log("orchestrateur_langgraph", "Fallback orchestration Python apres erreur LangGraph", {"error": str(exc)})
         final_state = run_pipeline_sequential(use_live=use_live, use_llm=use_llm)
+        save_latest_run_state(final_state, orchestrator="python_fallback")
         return pipeline_result_from_state(final_state, orchestrator="python_fallback")
